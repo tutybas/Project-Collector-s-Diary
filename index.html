@@ -32,13 +32,32 @@
  .drawer-professions{margin-top:6px}
 }
 </style>
+
+<style>
+.top-tabs{
+ display:flex;gap:8px;align-items:center;
+ padding:10px 16px;
+ border-bottom:1px solid var(--line);
+ overflow-x:auto;white-space:nowrap;
+ scrollbar-width:none;
+}
+.top-tabs::-webkit-scrollbar{display:none}
+.top-tabs button{
+ flex:0 0 auto;border:0;background:transparent;color:inherit;
+ padding:9px 13px;border-radius:10px;cursor:pointer;font:inherit;
+}
+.top-tabs button.active{background:var(--panel);font-weight:800}
+@media(max-width:899px){
+ .top-tabs{position:sticky;top:62px;z-index:45;background:var(--bg);padding:8px 10px}
+}
+</style>
 </head><body><header class="app-topbar"><button id="menuBtn" class="hamb" aria-label="Abrir menu" aria-expanded="false"><span></span><span></span><span></span></button><strong id="mobileTitle">DIÁRIO DO MINERADOR</strong></header><div id="drawerBackdrop" class="drawer-backdrop"></div><div class="app"><aside class="side"><div class="brand" id="brandTitle">DIÁRIO DO MINERADOR</div><nav class="nav"><div class="drawer-professions"><div class="drawer-label">DIÁRIOS</div>
 <button class="prof-btn active" data-prof="ore">Minerador</button>
 <button class="prof-btn" data-prof="wood">Lenhador</button>
 <button class="prof-btn" data-prof="hide">Curtidor</button>
 <button class="prof-btn" data-prof="fiber">Tecelão</button>
 <button class="prof-btn" data-prof="rock">Pedreiro</button>
-<div class="drawer-sep"></div><div class="drawer-label">MENU</div><button class="on" data-p="painel">Painel</button><button data-p="estoque">Estoque</button><button data-p="aportes">Aportes e saídas</button><button data-p="config">Configurações</button></div></nav></aside><main class="main">
+<div class="drawer-sep"></div><div class="drawer-label">MENU</div></div></nav></aside><div class="top-tabs" id="topTabs"><button class="on" data-p="painel">Painel</button><button data-p="estoque">Estoque</button><button data-p="aportes">Aportes e saídas</button><button data-p="config">Configurações</button></div><main class="main">
 <section id="painel" class="page on"><h1>Painel de refino</h1><div class="lead">Escolha a barra. Estoque, retorno e mercado entram automaticamente na conta.</div><div class="grid">
 <div class="card"><h2>Produção</h2><div class="item"><img id="hero"><div class="grow"><label>Barra</label><select id="target"></select><div id="recipe" class="mut tiny"></div></div></div><div id="simBox" style="display:none;margin-top:12px"><label>Simular produção</label><input id="simQty" type="number" min="1" placeholder="Digite quantas barras quer simular"><div class="mut tiny">Simulação temporária. Não altera sua quantidade padrão.</div></div><div class="actions"><button id="refresh" class="btn primary">Atualizar mercado</button><button id="calc" class="btn">Recalcular</button></div><div id="status" class="status">Mercado ainda não atualizado nesta sessão.</div></div>
 <div class="card"><h2>Estoque usado nesta receita</h2><div id="owned"></div></div>
@@ -154,7 +173,7 @@ function commitRefine(){
  ss();logs.unshift({id:'m'+Date.now(),date:new Date().toISOString(),type:'refino',items:movements,total:x.q,cancelled:false});
  localStorage.setItem(L,JSON.stringify(logs));$('simQty').value='';stockUI();owned();logUI();calc();
 }
-document.querySelectorAll('.nav button').forEach(b=>b.onclick=()=>{document.querySelectorAll('.nav button').forEach(x=>x.classList.remove('on'));b.classList.add('on');document.querySelectorAll('.page').forEach(x=>x.classList.remove('on'));$(b.dataset.p).classList.add('on');if(b.dataset.p==='estoque')stockUI();if(b.dataset.p==='aportes')logUI()});document.querySelectorAll('.chip[data-f]').forEach(b=>b.onclick=()=>{document.querySelectorAll('.chip[data-f]').forEach(x=>x.classList.remove('on'));b.classList.add('on');stockUI(b.dataset.f)});
+document.querySelectorAll('button[data-p]').forEach(b=>b.onclick=()=>{document.querySelectorAll('button[data-p]').forEach(x=>x.classList.remove('on'));b.classList.add('on');document.querySelectorAll('.page').forEach(x=>x.classList.remove('on'));$(b.dataset.p).classList.add('on');if(b.dataset.p==='estoque')stockUI();if(b.dataset.p==='aportes')logUI()});document.querySelectorAll('.chip[data-f]').forEach(b=>b.onclick=()=>{document.querySelectorAll('.chip[data-f]').forEach(x=>x.classList.remove('on'));b.classList.add('on');stockUI(b.dataset.f)});
 $('target').onchange=()=>{$('simQty').value='';hero()};$('simQty').oninput=calc;$('refresh').onclick=refresh;$('calc').onclick=calc;$('savecfg').onclick=savecfg;$('resetcfg').onclick=()=>{cfg={server:'west',city:'Fort Sterling',rrr:15.2,tax:0,productionMode:'buy',buyMode:'sell',saleMode:'buy',defqty:0};localStorage.setItem(C,JSON.stringify(cfg));loadcfg();calc()};$('zero').onclick=()=>{if(confirm('Zerar todo o estoque?')){stock={};ss();stockUI();owned();calc()}};
 function openMovement(type){movementType=type;$('modalTitle').textContent=type==='aporte'?'Novo aporte':'Nova saída';$('modalLead').textContent=type==='aporte'?'Informe o que entrou no estoque.':'Informe o que saiu do estoque.';$('modal').classList.add('on');apUI()}
 $('newap').onclick=()=>openMovement('aporte');$('newout').onclick=()=>openMovement('saida');$('cancelap').onclick=()=>$('modal').classList.remove('on');
@@ -173,7 +192,7 @@ function closeDrawer(){document.body.classList.remove('drawer-open');$('menuBtn'
 $('menuBtn').onclick=()=>{let on=document.body.classList.toggle('drawer-open');$('menuBtn').setAttribute('aria-expanded',on?'true':'false')};
 $('drawerBackdrop').onclick=closeDrawer;
 document.querySelectorAll('.prof-btn').forEach(b=>b.onclick=()=>{setProfession(b.dataset.prof);closeDrawer()});
-document.querySelectorAll('.nav button[data-p]').forEach(b=>b.addEventListener('click',()=>{if(innerWidth<900)closeDrawer()}));
+document.querySelectorAll('button[data-p]').forEach(b=>b.addEventListener('click',()=>{if(innerWidth<900)closeDrawer()}));
 
 setProfession(profession);
 loadcfg();stockUI();logUI();hero();
