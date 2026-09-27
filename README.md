@@ -8,20 +8,27 @@ A ideia é simples: você informa e acompanha seu estoque, escolhe o que pretend
 
 O Collector's Diary reúne cálculo de refino, consulta de mercado, controle de estoque e histórico de movimentações em uma interface que funciona tanto no computador quanto no celular. Ele não joga nem negocia por você: funciona como uma ferramenta de apoio para tornar o processo de coleta e refino mais rápido e organizado.
 
+## Download
+
+**Versão atual: v1.0.0**
+
+[Baixar Collector's Diary v1.0.0](https://github.com/tutybas/Project-Collector-s-Diary/releases/download/v1.0.0/Collectors-Diary-v1.0.0.html)
+
+Salve o arquivo HTML e abra-o no navegador. Consulte também a [Release v1.0.0](https://github.com/tutybas/Project-Collector-s-Diary/releases/tag/v1.0.0).
+
 ## O que você pode fazer
 
-- Alternar entre os diários de **Minerador, Lenhador, Curtidor, Tecelão e Pedreiro**.
-- Consultar preços do mercado pela Albion Online Data Project.
-- Escolher cidade, servidor e critérios de preço usados nas contas.
-- Calcular uma produção usando o estoque atual.
-- Descobrir quais materiais ainda precisam ser comprados.
-- Ver quanto você recebe depois da taxa configurada do mercado.
-- Comparar o valor de refinar com o valor de vender os materiais diretamente.
-- Registrar recursos e refinados no estoque.
-- Registrar aportes e saídas manualmente.
-- Confirmar um refino e atualizar o estoque automaticamente.
-- Consultar o histórico das movimentações e cancelar movimentações reversíveis.
-- Usar a mesma base de estoque entre os diferentes diários.
+| Funcionalidade | Descrição |
+| --- | --- |
+| Cinco diários | Coleta e refino para Minerador, Lenhador, Curtidor, Tecelão e Pedreiro. |
+| Mercado | Consulta preços pela Albion Online Data Project com servidor, cidade e referências escolhidos pelo jogador. |
+| Completar com compras | Calcula materiais faltantes, compras necessárias, receita após taxa e lucro da operação. |
+| Somente estoque | Limita a produção aos materiais disponíveis e compara refino com venda dos materiais. |
+| Estoque compartilhado | Registra recursos e refinados dos cinco diários no navegador. |
+| Aportes e saídas | Registra vários itens por movimentação e agrupa itens repetidos. |
+| Refino confirmado | Atualiza o estoque e registra a operação no histórico. |
+| Histórico reversível | Cancela movimentações compatíveis sem permitir estoque negativo. |
+| Interface responsiva | Navegação lateral no desktop e menu compacto no celular. |
 
 ## Como usar
 
@@ -43,15 +50,19 @@ No celular, os diários ficam no menu hambúrguer. No computador, a navegação 
 
 ### 2. Configure o mercado
 
-Em **Configurações**, defina os parâmetros usados nos cálculos.
+No primeiro uso, abra **Configurações**, escolha servidor, cidade, modo de produção e referências de compra e venda, informe as taxas e salve. Essas escolhas permitem usar o aplicativo em diferentes servidores, cidades e situações de mercado.
 
-**Servidor e cidade** determinam de onde os preços serão consultados.
+**Servidor e cidade** determinam de onde os preços serão consultados. Ambos começam em **---**, assim como os modos de produção, compra e venda; nenhuma dessas opções é escolhida automaticamente.
 
-**Taxa de retorno** representa a porcentagem esperada de materiais devolvidos durante o refino. O valor padrão usado pelo projeto é 15,2%, mas pode ser alterado.
+**Taxa de retorno** representa a porcentagem esperada de materiais devolvidos durante o refino. Começa em **0** e deve ser informada conforme a situação do jogador.
 
-**Taxa do mercado** é descontada do valor final recebido na venda. Configure de acordo com a situação da sua conta/personagem.
+**Taxa do mercado** é descontada do valor final recebido na venda. Começa em **0**; informe a taxa correspondente à sua conta/personagem.
 
-Também é possível escolher qual referência de compra e venda será usada nos dados de mercado.
+A **quantidade padrão** começa em **0**, mantendo o cálculo a partir do estoque. Escolha também as referências de compra e venda que serão usadas nos dados de mercado.
+
+Os padrões neutros se aplicam a quem ainda não possui configurações salvas. Configurações existentes no `localStorage` são preservadas. O botão **Restaurar padrões** aplica os valores neutros quando acionado pelo jogador.
+
+Sem servidor ou cidade, a consulta de mercado é bloqueada com uma orientação no painel. Os cálculos também aguardam a escolha dos modos de produção, compra e venda.
 
 > O custo cobrado pela estação de refino não é incluído, porque esse valor varia de acordo com a estação utilizada pelo jogador.
 
@@ -155,6 +166,22 @@ O layout foi ajustado separadamente para desktop e celular:
 
 - **Desktop:** menu lateral e área de trabalho ampla.
 - **Mobile:** navegação compacta e menu hambúrguer dedicado à troca de diário.
+
+## Sobre a organização do código
+
+O aplicativo concentra estrutura HTML, estilos CSS e lógica JavaScript em um único arquivo, permitindo distribuir e abrir o HTML sem instalação ou build. As funções separam consulta de mercado, cálculo, renderização do estoque e registro de movimentações dentro desse arquivo.
+
+A tabela `PROFESSIONS` reúne os nomes e identificadores de recursos e refinados de cada profissão. As mesmas funções de receita, estoque e interface usam a profissão selecionada, reaproveitando a lógica nos cinco diários. Configurações, estoque e histórico usam chaves separadas no `localStorage`.
+
+## Aprendizados aplicados
+
+- Manipulação do DOM e eventos de formulários e navegação.
+- Layout responsivo com CSS Grid, Flexbox e media queries.
+- Consulta assíncrona de API com `fetch` e tratamento de falhas.
+- Persistência de objetos em `localStorage` com JSON.
+- Cálculo de produção, retorno de recursos, custos e receitas.
+- Validação de configurações antes de consultar o mercado e calcular.
+- Registro e reversão de movimentações com validação do estoque.
 
 ## Versão
 
