@@ -1,198 +1,35 @@
-<!doctype html>
-<html lang="pt-BR">
-<head>
-<meta charset="utf-8">
-<meta name="viewport" content="width=device-width,initial-scale=1">
-<title>Forja da Lâmina — Albion Refining</title>
+<!doctype html><html lang="pt-BR"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Forja da Lâmina V2</title>
 <style>
-:root{--bg:#0d1117;--panel:#151b23;--panel2:#1c2430;--line:#2a3442;--text:#edf2f7;--muted:#9eabb9;--gold:#e7b85c;--green:#61d095;--red:#ff7474;--blue:#68a7ff}
-*{box-sizing:border-box} body{margin:0;background:radial-gradient(circle at top,#182333 0,#0d1117 45%);color:var(--text);font:15px system-ui,-apple-system,Segoe UI,Roboto,sans-serif}
-.wrap{max-width:1180px;margin:auto;padding:24px}.hero{display:flex;gap:16px;justify-content:space-between;align-items:end;margin-bottom:18px}
-h1{margin:0;font-size:28px} .sub,.muted{color:var(--muted)} .badge{display:inline-block;padding:5px 9px;border:1px solid #765d2b;background:#2b2417;color:#ffd67f;border-radius:999px;font-size:12px}
-.grid{display:grid;grid-template-columns:1fr 1fr;gap:16px}.card{background:rgba(21,27,35,.96);border:1px solid var(--line);border-radius:14px;padding:17px;box-shadow:0 10px 35px #0004}
-.card.full{grid-column:1/-1} h2{font-size:17px;margin:0 0 14px}.fields{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:11px}
-label{display:block;color:var(--muted);font-size:12px;margin-bottom:5px} input,select,button{width:100%;border:1px solid #344151;border-radius:9px;background:#0f151d;color:var(--text);padding:10px 11px;font:inherit}
-button{cursor:pointer;font-weight:700}.primary{background:#b27a22;border-color:#d39a3e;color:white}.secondary{background:#1b2735}.primary:hover,.secondary:hover{filter:brightness(1.12)}
-.actions{display:flex;gap:9px;margin-top:13px}.status{margin-top:10px;font-size:12px;color:var(--muted)}
-.kpis{display:grid;grid-template-columns:repeat(4,1fr);gap:10px}.kpi{background:var(--panel2);border:1px solid var(--line);padding:13px;border-radius:11px}.kpi b{display:block;font-size:20px;margin-top:4px}.good{color:var(--green)}.bad{color:var(--red)}.gold{color:var(--gold)}
-table{width:100%;border-collapse:collapse}th,td{text-align:right;padding:10px 8px;border-bottom:1px solid var(--line)}th:first-child,td:first-child{text-align:left}th{font-size:11px;color:var(--muted);text-transform:uppercase}
-.note{padding:10px 12px;border-left:3px solid var(--gold);background:#211c14;color:#d8c9aa;border-radius:7px;font-size:12px;margin-top:12px}
-.result{font-size:14px;line-height:1.65}.result strong{color:#fff}.winner{border:1px solid #37684f;background:#13251d;padding:12px;border-radius:10px;margin-top:10px}
-.small{font-size:11px}.stock-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:10px}
-@media(max-width:780px){.grid,.fields,.kpis,.stock-grid{grid-template-columns:1fr}.card.full{grid-column:auto}.hero{align-items:start;flex-direction:column}.kpis{grid-template-columns:1fr 1fr}}
-</style>
-</head>
-<body>
-<div class="wrap">
-  <div class="hero">
-    <div><span class="badge">AMERICAS • ORE → METAL BAR</span><h1>⚔️ Forja da Lâmina</h1><div class="sub">Calculadora de refino do Albion Online com preços automáticos.</div></div>
-    <div class="muted small">Fonte: Albion Online Data Project</div>
-  </div>
-
-  <div class="grid">
-    <section class="card">
-      <h2>🎯 O que você quer produzir?</h2>
-      <div class="fields">
-        <div><label>Tier da barra</label><select id="tier"></select></div>
-        <div><label>Encantamento</label><select id="ench"></select></div>
-        <div><label>Quantidade de barras</label><input id="qty" type="number" min="1" value="100"></div>
-        <div><label>Cidade / mercado</label><select id="city">
-          <option>Fort Sterling</option><option>Thetford</option><option>Martlock</option><option>Lymhurst</option><option>Bridgewatch</option><option>Caerleon</option>
-        </select></div>
-        <div><label>Retorno de recursos (%)</label><input id="rrr" type="number" step=".1" min="0" max="99" value="15.2"></div>
-        <div><label>Custo da estação por barra (opcional)</label><input id="station" type="number" min="0" value="0"></div>
-        <div><label>Taxa na venda (%)</label><input id="tax" type="number" step=".1" min="0" value="0"></div>
-        <div><label>Preço usado para comprar materiais</label><select id="buyMode"><option value="sell">Comprar agora (Sell Order)</option><option value="buy">Criar ordem de compra (Buy Order)</option></select></div>
-      </div>
-      <div class="actions"><button class="primary" id="refresh">🔄 Atualizar mercado</button><button class="secondary" id="calc">🧮 Calcular</button></div>
-      <div class="status" id="status">Aguardando atualização do mercado.</div>
-    </section>
-
-    <section class="card">
-      <h2>📦 Meu estoque</h2>
-      <div class="stock-grid">
-        <div><label id="oreStockLabel">Minério alvo que já tenho</label><input id="oreStock" type="number" min="0" value="0"></div>
-        <div><label id="prevStockLabel">Barra anterior que já tenho</label><input id="prevStock" type="number" min="0" value="0"></div>
-      </div>
-      <div class="note">O estoque reduz o que precisa ser comprado. No lucro econômico, porém, os materiais que você já possui também têm valor de mercado — assim você consegue comparar refinar vs. simplesmente vender o que coletou.</div>
-      <h2 style="margin-top:18px">💵 Como pretende vender?</h2>
-      <select id="saleMode"><option value="buy">Venda rápida (maior Buy Order)</option><option value="sell">Ordem de venda (menor Sell Order)</option></select>
-    </section>
-
-    <section class="card full">
-      <h2>📈 Resultado</h2>
-      <div class="kpis">
-        <div class="kpi"><span class="muted">Comprar agora</span><b id="cashNeeded">—</b></div>
-        <div class="kpi"><span class="muted">Receita líquida</span><b id="revenue">—</b></div>
-        <div class="kpi"><span class="muted">Resultado caixa</span><b id="cashProfit">—</b></div>
-        <div class="kpi"><span class="muted">Lucro econômico</span><b id="econProfit">—</b></div>
-      </div>
-      <div id="details" class="result" style="margin-top:15px">Atualize o mercado e escolha sua produção.</div>
-    </section>
-
-    <section class="card full">
-      <h2>🏪 Preços usados</h2>
-      <div style="overflow:auto"><table><thead><tr><th>Item</th><th>Comprar agora</th><th>Buy Order</th><th>Atualização venda</th><th>Atualização compra</th></tr></thead><tbody id="pricesBody"></tbody></table></div>
-    </section>
-  </div>
-</div>
-
+:root{--bg:#0b1016;--side:#101720;--card:#151d27;--card2:#1b2531;--line:#2b3746;--txt:#eef2f6;--mut:#929eac;--acc:#b98842;--ok:#65c893;--bad:#e87878}*{box-sizing:border-box}body{margin:0;background:var(--bg);color:var(--txt);font:14px system-ui,Segoe UI,sans-serif}.app{min-height:100vh;display:grid;grid-template-columns:220px 1fr}.side{background:var(--side);border-right:1px solid var(--line);padding:20px 14px}.brand{font-weight:800;font-size:18px;padding:6px 10px 20px;color:#ead7b5}.brand small{display:block;color:var(--mut);font-size:10px;margin-top:4px}.nav{display:grid;gap:5px}.nav button{background:transparent;border:0;color:var(--mut);padding:11px;text-align:left;border-radius:8px;cursor:pointer}.nav button.on,.nav button:hover{background:#1c2632;color:white}.main{padding:26px;max-width:1250px;width:100%;margin:auto}.page{display:none}.page.on{display:block}h1{margin:0 0 4px;font-size:25px}h2{font-size:16px;margin:0 0 13px}.lead{color:var(--mut);margin-bottom:20px}.grid{display:grid;grid-template-columns:1.1fr .9fr;gap:14px}.card{background:var(--card);border:1px solid var(--line);border-radius:12px;padding:16px}.full{grid-column:1/-1}.fields{display:grid;grid-template-columns:1fr 1fr;gap:10px}label{display:block;color:var(--mut);font-size:11px;margin-bottom:5px}input,select{width:100%;background:#0d141c;border:1px solid #354252;border-radius:8px;padding:10px;color:white}.btn{background:#202b37;color:white;border:1px solid #465567;border-radius:8px;padding:10px 14px;cursor:pointer}.primary{background:#95682a;border-color:#b58139}.actions{display:flex;gap:8px;flex-wrap:wrap;margin-top:12px}.item{display:flex;align-items:center;gap:12px;background:var(--card2);border:1px solid var(--line);border-radius:10px;padding:10px;margin-bottom:9px}.item img,.stock img{width:64px;height:64px;object-fit:contain}.grow{flex:1}.mut{color:var(--mut)}.tiny{font-size:10px}.stats{display:grid;grid-template-columns:repeat(4,1fr);gap:9px}.stat{background:var(--card2);border:1px solid var(--line);padding:11px;border-radius:9px}.stat span{display:block;color:var(--mut);font-size:10px}.stat b{font-size:18px}.ok{color:var(--ok)}.bad{color:var(--bad)}.call{margin-top:12px;background:#12231b;border:1px solid #315b47;padding:11px;border-radius:9px;line-height:1.6}.stockgrid{display:grid;grid-template-columns:repeat(4,minmax(175px,1fr));gap:9px}.stock{display:grid;grid-template-columns:64px 1fr;align-items:center;background:var(--card2);border:1px solid var(--line);padding:9px;border-radius:10px}.stock input{padding:7px;margin-top:5px}.chips{display:flex;gap:6px;margin-bottom:13px}.chip{border:1px solid var(--line);background:#121922;color:var(--mut);padding:7px 11px;border-radius:99px;cursor:pointer}.chip.on{color:white;border-color:#856a38}.log{width:100%;border-collapse:collapse}.log td,.log th{padding:9px;border-bottom:1px solid var(--line);text-align:left}.log th{font-size:10px;color:var(--mut)}.modal{display:none;position:fixed;inset:0;background:#000b;align-items:center;justify-content:center;padding:18px}.modal.on{display:flex}.box{background:var(--card);border:1px solid #3b4858;border-radius:13px;padding:17px;width:min(720px,100%);max-height:85vh;overflow:auto}.aportes{display:grid;grid-template-columns:repeat(3,1fr);gap:8px}.ap{background:var(--card2);padding:8px;border-radius:8px}.ap img{width:48px;height:48px;vertical-align:middle}.status{color:var(--mut);font-size:11px;margin-top:8px}
+@media(max-width:900px){.app{grid-template-columns:1fr}.side{border-right:0;border-bottom:1px solid var(--line)}.nav{grid-template-columns:repeat(4,1fr)}.nav button{text-align:center}.grid{grid-template-columns:1fr}.full{grid-column:auto}.stockgrid{grid-template-columns:repeat(2,1fr)}}@media(max-width:560px){.main{padding:14px}.fields,.stats,.aportes{grid-template-columns:1fr 1fr}.stockgrid{grid-template-columns:1fr}}
+</style></head><body><div class="app"><aside class="side"><div class="brand">FORJA DA LÂMINA<small>Albion Online • Americas</small></div><nav class="nav"><button class="on" data-p="painel">Painel</button><button data-p="estoque">Estoque</button><button data-p="aportes">Aportes</button><button data-p="config">Configurações</button></nav></aside><main class="main">
+<section id="painel" class="page on"><h1>Painel de refino</h1><div class="lead">Escolha a barra. Estoque, retorno e mercado entram automaticamente na conta.</div><div class="grid">
+<div class="card"><h2>Produção</h2><div class="item"><img id="hero"><div class="grow"><label>Barra</label><select id="target"></select><div id="recipe" class="mut tiny"></div></div></div><div class="fields"><div><label>Quantidade desejada</label><input id="qty" type="number" min="0" value="0"><div class="mut tiny">0 = usar todos os minérios disponíveis</div></div><div><label>Venda</label><select id="sale"><option value="buy">Venda rápida</option><option value="sell">Ordem de venda</option></select></div></div><div class="actions"><button id="refresh" class="btn primary">Atualizar mercado</button><button id="calc" class="btn">Recalcular</button></div><div id="status" class="status">Mercado ainda não atualizado nesta sessão.</div></div>
+<div class="card"><h2>Estoque usado nesta receita</h2><div id="owned"></div></div>
+<div class="card full"><h2>Resultado</h2><div class="stats"><div class="stat"><span>BARRAS A PRODUZIR</span><b id="oq">—</b></div><div class="stat"><span>COMPRA NECESSÁRIA</span><b id="cash">—</b></div><div class="stat"><span>RECEITA LÍQUIDA</span><b id="rev">—</b></div><div class="stat"><span>LUCRO ECONÔMICO</span><b id="profit">—</b></div></div><div id="result"></div></div></div></section>
+<section id="estoque" class="page"><h1>Estoque</h1><div class="lead">O conteúdo do seu baú fica salvo neste navegador.</div><div class="chips"><button class="chip on" data-f="all">Tudo</button><button class="chip" data-f="ore">Minérios</button><button class="chip" data-f="bar">Barras</button><button id="zero" class="chip">Zerar estoque</button></div><div id="stockgrid" class="stockgrid"></div></section>
+<section id="aportes" class="page"><h1>Aportes</h1><div class="lead">Registre cada volta da mineração e some o lote ao estoque.</div><div class="card"><button id="newap" class="btn primary">Novo aporte</button></div><div class="card" style="margin-top:14px"><h2>Diário de mineração</h2><div style="overflow:auto"><table class="log"><thead><tr><th>DATA</th><th>ITENS</th><th>TOTAL</th></tr></thead><tbody id="logs"></tbody></table></div></div></section>
+<section id="config" class="page"><h1>Configurações</h1><div class="lead">Defina uma vez os valores que raramente mudam.</div><div class="card"><div class="fields"><div><label>Servidor</label><select id="server"><option value="west">Americas</option><option value="europe">Europe</option><option value="east">Asia</option></select></div><div><label>Cidade / mercado</label><select id="city"><option>Fort Sterling</option><option>Thetford</option><option>Martlock</option><option>Lymhurst</option><option>Bridgewatch</option><option>Caerleon</option><option>Brecilien</option></select></div><div><label>Retorno de recursos (%)</label><input id="rrr" type="number" step=".1"></div><div><label>Taxa de venda (%)</label><input id="tax" type="number" step=".1"></div><div><label>Custo da estação por barra</label><input id="station" type="number"></div><div><label>Compra de materiais</label><select id="buyMode"><option value="sell">Comprar imediatamente</option><option value="buy">Ordem de compra</option></select></div><div><label>Meta padrão de barras</label><input id="defqty" type="number" min="0"><div class="mut tiny">0 = usar o minério disponível</div></div></div><div class="actions"><button id="savecfg" class="btn primary">Salvar configurações</button><button id="resetcfg" class="btn">Restaurar padrões</button></div><div id="cfgmsg" class="status"></div></div></section>
+</main></div>
+<div id="modal" class="modal"><div class="box"><h2>Novo aporte de mineração</h2><div class="lead">Preencha apenas o que trouxe nesta viagem.</div><div id="apgrid" class="aportes"></div><div class="actions"><button id="saveap" class="btn primary">Adicionar ao estoque</button><button id="cancelap" class="btn">Cancelar</button></div></div></div>
 <script>
-const API='https://west.albion-online-data.com/api/v2/stats/prices/';
-const recipe={2:1,3:2,4:2,5:3,6:4,7:5,8:5};
-let market={};
-
-const $=id=>document.getElementById(id);
-const fmt=n=>Number.isFinite(n)?Math.round(n).toLocaleString('pt-BR')+' 🪙':'—';
-const num=id=>Math.max(0,Number($(id).value)||0);
-
-for(let t=2;t<=8;t++) $('tier').add(new Option('T'+t,t));
-['0','1','2','3','4'].forEach(e=>$('ench').add(new Option(e==='0'?'Sem encantamento':'.'+e,e)));
-$('tier').value='5';
-
-function validEnchant(){
-  const t=+$('tier').value,e=+$('ench').value;
-  [...$('ench').options].forEach(o=>o.disabled=(+o.value>0 && t<4));
-  if(t<4 && e>0)$('ench').value='0';
-  updateLabels();
-}
-function suffix(e){return e?`_LEVEL${e}@${e}`:''}
-function oreId(t,e){return `T${t}_ORE${suffix(e)}`}
-function barId(t,e){return `T${t}_METALBAR${suffix(e)}`}
-function name(kind,t,e){return `${kind==='ore'?'Minério':'Barra'} T${t}${e?'.'+e:''}`}
-function updateLabels(){
-  const t=+$('tier').value,e=+$('ench').value;
-  $('oreStockLabel').textContent=name('ore',t,e)+' que já tenho';
-  $('prevStockLabel').textContent=t===2?'T2 não usa barra anterior':name('bar',t-1,e)+' que já tenho';
-  $('prevStock').disabled=t===2;
-}
-$('tier').onchange=validEnchant;$('ench').onchange=updateLabels;
-
-function allIds(){
-  let ids=[];
-  for(let t=2;t<=8;t++){
-    ids.push(oreId(t,0),barId(t,0));
-    if(t>=4)for(let e=1;e<=4;e++)ids.push(oreId(t,e),barId(t,e));
-  }
-  return ids;
-}
-function age(date){
-  if(!date)return 'sem dado';
-  const d=new Date(date+'Z'), mins=Math.max(0,Math.floor((Date.now()-d)/60000));
-  if(mins<60)return `${mins} min`;
-  if(mins<1440)return `${Math.floor(mins/60)} h`;
-  return `${Math.floor(mins/1440)} d`;
-}
-async function refresh(){
-  $('status').textContent='Buscando preços no servidor Americas...';
-  try{
-    const ids=allIds();
-    const city=encodeURIComponent($('city').value);
-    const url=API+ids.map(encodeURIComponent).join(',')+`.json?locations=${city}&qualities=1`;
-    const r=await fetch(url);
-    if(!r.ok)throw new Error('HTTP '+r.status);
-    const data=await r.json();
-    market={};
-    for(const x of data) market[x.item_id]=x;
-    $('status').textContent=`✓ ${data.length} preços recebidos para ${$('city').value}.`;
-    renderPrices(); calculate();
-  }catch(e){
-    $('status').textContent='⚠️ Não consegui consultar a API: '+e.message+'. Se abriu o HTML direto e o navegador bloqueou a requisição, tente outro navegador ou execute por um servidor local.';
-  }
-}
-function p(id,mode){
-  const x=market[id]; if(!x)return 0;
-  return mode==='sell'?(x.sell_price_min||0):(x.buy_price_max||0);
-}
-function renderPrices(){
-  const t=+$('tier').value,e=+$('ench').value, ids=[oreId(t,e),barId(t,e)];
-  if(t>2)ids.splice(1,0,barId(t-1,e));
-  $('pricesBody').innerHTML=ids.map(id=>{
-    const x=market[id]||{};
-    const kind=id.includes('ORE')?'ore':'bar';
-    const mt=+(id.match(/^T(\d)/)||[])[1], me=+(id.match(/LEVEL(\d)/)||[])[1]||0;
-    return `<tr><td>${name(kind,mt,me)}</td><td>${fmt(x.sell_price_min||NaN)}</td><td>${fmt(x.buy_price_max||NaN)}</td><td>${age(x.sell_price_min_date)}</td><td>${age(x.buy_price_max_date)}</td></tr>`
-  }).join('');
-}
-function calculate(){
-  validEnchant();
-  const t=+$('tier').value,e=+$('ench').value,q=num('qty'),r=num('rrr')/100, station=num('station'),tax=num('tax')/100;
-  const buyMode=$('buyMode').value,saleMode=$('saleMode').value;
-  const oid=oreId(t,e), bid=barId(t,e), pid=t>2?barId(t-1,e):null;
-  const orePrice=p(oid,buyMode), prevPrice=pid?p(pid,buyMode):0, finalPrice=p(bid,saleMode);
-  const oreMarket=p(oid,'sell')||p(oid,'buy'), prevMarket=pid?(p(pid,'sell')||p(pid,'buy')):0;
-  const grossOre=q*recipe[t], grossPrev=t===2?0:q;
-  // Expected net consumption after Resource Return Rate. Returned ingredients are reusable.
-  const netOre=grossOre*(1-r), netPrev=grossPrev*(1-r);
-  const ownOre=num('oreStock'), ownPrev=t===2?0:num('prevStock');
-  const buyOre=Math.max(0,netOre-ownOre), buyPrev=Math.max(0,netPrev-ownPrev);
-  const cashMaterials=buyOre*orePrice+buyPrev*prevPrice;
-  const stationCost=q*station;
-  const cashNeeded=cashMaterials+stationCost;
-  const grossRevenue=q*finalPrice, netRevenue=grossRevenue*(1-tax);
-  const cashProfit=netRevenue-cashNeeded;
-  const usedOwnOre=Math.min(ownOre,netOre), usedOwnPrev=Math.min(ownPrev,netPrev);
-  const opportunity=usedOwnOre*oreMarket+usedOwnPrev*prevMarket;
-  const econProfit=netRevenue-cashNeeded-opportunity;
-  $('cashNeeded').textContent=fmt(cashNeeded);$('revenue').textContent=fmt(netRevenue);
-  $('cashProfit').textContent=fmt(cashProfit);$('econProfit').textContent=fmt(econProfit);
-  $('cashProfit').className=cashProfit>=0?'good':'bad';$('econProfit').className=econProfit>=0?'good':'bad';
-  const missing=!orePrice || (t>2&&!prevPrice) || !finalPrice;
-  let sellOreValue=ownOre*(p(oid,saleMode)||0)*(1-tax);
-  $('details').innerHTML=`
-    ${missing?'<div class="note">⚠️ Há preço zerado/ausente na API para algum item necessário. Confira a tabela abaixo antes de confiar no resultado.</div>':''}
-    <p>Para produzir <strong>${q.toLocaleString('pt-BR')} ${name('bar',t,e)}</strong>, a receita bruta usa <strong>${grossOre.toFixed(0)} ${name('ore',t,e)}</strong>${t>2?` + <strong>${grossPrev.toFixed(0)} ${name('bar',t-1,e)}</strong>`:''}.</p>
-    <p>Com retorno esperado de <strong>${(r*100).toFixed(1)}%</strong>, o consumo líquido estimado cai para <strong>${netOre.toFixed(1)} minérios</strong>${t>2?` e <strong>${netPrev.toFixed(1)} barras anteriores</strong>`:''}.</p>
-    <div class="winner">🛒 Considerando seu estoque, compre aproximadamente <strong>${Math.ceil(buyOre)} ${name('ore',t,e)}</strong>${t>2?` e <strong>${Math.ceil(buyPrev)} ${name('bar',t-1,e)}</strong>`:''}. Custo estimado dos materiais: <strong>${fmt(cashMaterials)}</strong>.</div>
-    <p>📦 Valor de oportunidade do seu estoque efetivamente consumido: <strong>${fmt(opportunity)}</strong>. Isso evita tratar minério coletado como se valesse zero.</p>
-    ${ownOre>0?`<p>⛏️ Se você simplesmente vendesse agora os <strong>${ownOre.toLocaleString('pt-BR')} minérios alvo</strong> pelo modo de venda selecionado, receberia aproximadamente <strong>${fmt(sellOreValue)}</strong>.</p>`:''}
-    <p class="muted small">O retorno é uma estimativa média para planejamento; o jogo trabalha com unidades inteiras e o resultado real de um lote pequeno pode diferir por arredondamentos. “Lucro econômico” desconta também o valor de mercado dos materiais seus que foram usados.</p>`;
-  renderPrices();
-}
-$('refresh').onclick=refresh;$('calc').onclick=calculate;
-['qty','rrr','station','tax','oreStock','prevStock','buyMode','saleMode'].forEach(id=>$(id).addEventListener('input',calculate));
-$('city').onchange=refresh;
-validEnchant();
-</script>
-</body>
-</html>
+const R={2:1,3:2,4:2,5:3,6:4,7:5,8:5},S='flv2_stock',C='flv2_cfg',L='flv2_logs',$=x=>document.getElementById(x);
+let stock=JSON.parse(localStorage.getItem(S)||'{}'),logs=JSON.parse(localStorage.getItem(L)||'[]'),market={},cfg=Object.assign({server:'west',city:'Fort Sterling',rrr:15.2,tax:0,station:0,buyMode:'sell',defqty:0},JSON.parse(localStorage.getItem(C)||'{}'));
+const num=x=>Math.max(0,Number($(x).value)||0),money=x=>Number.isFinite(x)?Math.round(x).toLocaleString('pt-BR')+' prata':'—';
+function base(k,t){return`T${t}_${k==='ore'?'ORE':'METALBAR'}`}function iid(k,t,e=0){return base(k,t)+(e?`_LEVEL${e}@${e}`:'')}function rid(k,t,e=0){return base(k,t)+(e?`@${e}`:'')}function img(k,t,e=0){return`https://render.albiononline.com/v1/item/${encodeURIComponent(rid(k,t,e))}.png?quality=1&size=100`}function name(k,t,e=0){return`${k==='ore'?'Minério':'Barra'} T${t}${e?'.'+e:''}`}function vars(k){let a=[];for(let t=2;t<=8;t++){a.push({k,t,e:0,id:iid(k,t)});if(t>=4)for(let e=1;e<=4;e++)a.push({k,t,e,id:iid(k,t,e)})}return a}const items=[...vars('ore'),...vars('bar')];
+function gs(i){return Math.max(0,Number(stock[i])||0)}function ss(){localStorage.setItem(S,JSON.stringify(stock))}function target(){let a=$('target').value.split('.').map(Number);return{t:a[0],e:a[1]||0}}
+for(let t=2;t<=8;t++)for(const e of(t>=4?[0,1,2,3,4]:[0]))$('target').add(new Option(`T${t}${e?'.'+e:''}`,`${t}.${e}`));$('target').value='5.0';
+function hero(){let{t,e}=target();$('hero').src=img('bar',t,e);$('recipe').textContent=t===2?`1 × ${name('ore',t,e)}`:`${R[t]} × ${name('ore',t,e)} + 1 × ${name('bar',t-1,e)}`;owned();calc()}
+function owned(){let{t,e}=target(),o=iid('ore',t,e),p=t>2?iid('bar',t-1,e):null;$('owned').innerHTML=`<div class="item"><img src="${img('ore',t,e)}"><div><b>${name('ore',t,e)}</b><div class="mut">No baú: ${gs(o).toLocaleString('pt-BR')}</div></div></div>`+(p?`<div class="item"><img src="${img('bar',t-1,e)}"><div><b>${name('bar',t-1,e)}</b><div class="mut">No baú: ${gs(p).toLocaleString('pt-BR')}</div></div></div>`:'')}
+function stockUI(f='all'){$('stockgrid').innerHTML=items.filter(x=>f==='all'||x.k===f).map(x=>`<div class="stock"><img src="${img(x.k,x.t,x.e)}"><div><b>${name(x.k,x.t,x.e)}</b><input data-id="${x.id}" class="si" type="number" min="0" value="${gs(x.id)}"></div></div>`).join('');document.querySelectorAll('.si').forEach(x=>x.onchange=()=>{stock[x.dataset.id]=Math.max(0,+x.value||0);ss();owned();calc()})}
+function apUI(){$('apgrid').innerHTML=vars('ore').map(x=>`<div class="ap"><img src="${img('ore',x.t,x.e)}"><b>${name('ore',x.t,x.e)}</b><input class="api" data-id="${x.id}" data-n="${name('ore',x.t,x.e)}" type="number" min="0" placeholder="0"></div>`).join('')}
+function logUI(){$('logs').innerHTML=logs.length?logs.map(x=>`<tr><td>${x.date}</td><td>${x.sum}</td><td>${x.total.toLocaleString('pt-BR')}</td></tr>`).join(''):`<tr><td colspan="3" class="mut">Nenhum aporte registrado.</td></tr>`}
+function loadcfg(){for(const k of['server','city','rrr','tax','station','buyMode','defqty'])$(k).value=cfg[k];$('qty').value=cfg.defqty}
+function savecfg(){cfg={server:$('server').value,city:$('city').value,rrr:num('rrr'),tax:num('tax'),station:num('station'),buyMode:$('buyMode').value,defqty:num('defqty')};localStorage.setItem(C,JSON.stringify(cfg));$('qty').value=cfg.defqty;$('cfgmsg').textContent='Configurações salvas.';market={};calc()}
+function price(i,m){let x=market[i];return x?(m==='sell'?(x.sell_price_min||0):(x.buy_price_max||0)):0}
+async function refresh(){try{$('status').textContent='Consultando mercado...';let ids=items.map(x=>x.id),u=`https://${cfg.server}.albion-online-data.com/api/v2/stats/prices/${ids.map(encodeURIComponent).join(',')}.json?locations=${encodeURIComponent(cfg.city)}&qualities=1`,r=await fetch(u);if(!r.ok)throw Error('HTTP '+r.status);let d=await r.json();market={};d.forEach(x=>market[x.item_id]=x);$('status').textContent=`Preços atualizados: ${cfg.city} • ${d.length} registros.`;calc()}catch(e){$('status').textContent='Falha ao consultar mercado: '+e.message}}
+function calc(){if(!$('target').value)return;let{t,e}=target(),rr=cfg.rrr/100,o=iid('ore',t,e),p=t>2?iid('bar',t-1,e):null,b=iid('bar',t,e),ownO=gs(o),ownP=p?gs(p):0,q=num('qty'),no=R[t]*(1-rr),np=t>2?1-rr:0;if(q===0)q=ownO?Math.floor(ownO/no):0;$('oq').textContent=q.toLocaleString('pt-BR');if(!q){$('cash').textContent=$('rev').textContent=$('profit').textContent='—';$('result').innerHTML='<div class="call">Sem meta e sem minério desse tipo no estoque.</div>';return}let needO=q*no,needP=q*np,buyO=Math.max(0,needO-ownO),buyP=Math.max(0,needP-ownP),op=price(o,cfg.buyMode),pp=p?price(p,cfg.buyMode):0,bp=price(b,$('sale').value),cash=buyO*op+buyP*pp+q*cfg.station,rev=q*bp*(1-cfg.tax/100),opp=Math.min(ownO,needO)*(price(o,'sell')||price(o,'buy'))+Math.min(ownP,needP)*(p?(price(p,'sell')||price(p,'buy')):0),prof=rev-cash-opp;$('cash').textContent=money(cash);$('rev').textContent=money(rev);$('profit').textContent=money(prof);$('profit').className=prof>=0?'ok':'bad';$('result').innerHTML=`<div class="call">Produzir <strong>${q.toLocaleString('pt-BR')} ${name('bar',t,e)}</strong>. Comprar aproximadamente <strong>${Math.ceil(buyO).toLocaleString('pt-BR')} ${name('ore',t,e)}</strong>${p?` e <strong>${Math.ceil(buyP).toLocaleString('pt-BR')} ${name('bar',t-1,e)}</strong>`:''}. Retorno considerado: <strong>${cfg.rrr}%</strong>.</div><div class="mut tiny">Consumo líquido estimado: ${needO.toFixed(1)} minérios${p?` + ${needP.toFixed(1)} barras anteriores`:''}. Estoque próprio descontado automaticamente.</div>`}
+document.querySelectorAll('.nav button').forEach(b=>b.onclick=()=>{document.querySelectorAll('.nav button').forEach(x=>x.classList.remove('on'));b.classList.add('on');document.querySelectorAll('.page').forEach(x=>x.classList.remove('on'));$(b.dataset.p).classList.add('on');if(b.dataset.p==='estoque')stockUI();if(b.dataset.p==='aportes')logUI()});document.querySelectorAll('.chip[data-f]').forEach(b=>b.onclick=()=>{document.querySelectorAll('.chip[data-f]').forEach(x=>x.classList.remove('on'));b.classList.add('on');stockUI(b.dataset.f)});
+$('target').onchange=hero;$('qty').oninput=calc;$('sale').onchange=calc;$('refresh').onclick=refresh;$('calc').onclick=calc;$('savecfg').onclick=savecfg;$('resetcfg').onclick=()=>{cfg={server:'west',city:'Fort Sterling',rrr:15.2,tax:0,station:0,buyMode:'sell',defqty:0};localStorage.setItem(C,JSON.stringify(cfg));loadcfg();calc()};$('zero').onclick=()=>{if(confirm('Zerar todo o estoque?')){stock={};ss();stockUI();owned();calc()}};$('newap').onclick=()=>{$('modal').classList.add('on');apUI()};$('cancelap').onclick=()=>$('modal').classList.remove('on');$('saveap').onclick=()=>{let parts=[],total=0;document.querySelectorAll('.api').forEach(x=>{let v=Math.max(0,+x.value||0);if(v){stock[x.dataset.id]=gs(x.dataset.id)+v;parts.push(`${x.dataset.n}: ${v}`);total+=v}});if(!total)return alert('Informe pelo menos um minério.');ss();logs.unshift({date:new Date().toLocaleString('pt-BR'),sum:parts.join(' • '),total});localStorage.setItem(L,JSON.stringify(logs));$('modal').classList.remove('on');logUI();owned();calc()};
+loadcfg();stockUI();logUI();hero();
+</script></body></html>
