@@ -10,60 +10,86 @@
 </style>
 <style>.profession-switch{padding:0 10px 16px}.profession-switch label{display:block;font-size:10px;letter-spacing:.12em;color:var(--mut);margin-bottom:6px}.profession-switch select{width:100%}</style>
 <style>
-/* Diary switcher only. Original V10 page tabs/layout stay untouched. */
-.diary-topbar{
- position:fixed;z-index:90;top:14px;left:14px;
- display:flex;align-items:center;gap:10px;
-}
-.diary-topbar strong{display:none}
-.diary-hamb{
- width:42px;height:42px;border:1px solid var(--line);background:var(--panel);
- color:inherit;border-radius:10px;display:flex;flex-direction:column;
- justify-content:center;align-items:center;gap:5px;cursor:pointer;
- box-shadow:0 4px 18px rgba(0,0,0,.12)
-}
-.diary-hamb span{display:block;width:20px;height:2px;background:currentColor;border-radius:2px}
-.diary-drawer{
- position:fixed;z-index:110;top:0;left:0;bottom:0;width:min(82vw,290px);
- padding:18px 12px;background:var(--bg);border-right:1px solid var(--line);
- transform:translateX(-105%);transition:transform .2s ease;
- box-sizing:border-box;overflow-y:auto
-}
-.diary-open .diary-drawer{transform:translateX(0)}
-.diary-backdrop{display:none;position:fixed;z-index:100;inset:0;background:rgba(0,0,0,.45)}
-.diary-open .diary-backdrop{display:block}
-.diary-drawer-head{padding:8px 10px 14px;font-size:11px;letter-spacing:.14em;color:var(--mut)}
-.diary-drawer .prof-btn{
- display:block;width:100%;border:0;background:transparent;color:inherit;text-align:left;
- padding:11px 12px;margin:2px 0;border-radius:10px;cursor:pointer;font:inherit
-}
-.diary-drawer .prof-btn.active{background:var(--panel);font-weight:800}
+.app-topbar{display:none}
+.drawer-professions{display:flex;flex-direction:column;gap:4px;padding:6px 8px 10px}
+.drawer-label{font-size:10px;letter-spacing:.14em;color:var(--mut);padding:8px 10px 4px}
+.drawer-sep{height:1px;background:var(--line);margin:8px 6px}
+.prof-btn{border:0;background:transparent;color:inherit;text-align:left;padding:10px 12px;border-radius:10px;cursor:pointer;font:inherit}
+.prof-btn.active{background:var(--panel);font-weight:800}
+.drawer-backdrop{display:none}
 @media(max-width:899px){
- .diary-topbar{
-  position:sticky;top:0;left:auto;right:auto;height:58px;
-  padding:0 12px;background:var(--bg);border-bottom:1px solid var(--line);
-  box-sizing:border-box;z-index:90
- }
- .diary-topbar strong{display:block;font-size:13px;letter-spacing:.03em}
- .diary-hamb{box-shadow:none}
+ body{padding-top:62px}
+ .app-topbar{display:flex;position:fixed;z-index:60;top:0;left:0;right:0;height:62px;align-items:center;gap:14px;padding:0 16px;background:var(--bg);border-bottom:1px solid var(--line)}
+ .app-topbar strong{font-size:14px;letter-spacing:.04em}
+ .hamb{width:44px;height:44px;border:0;background:transparent;border-radius:10px;display:flex;flex-direction:column;justify-content:center;gap:5px;padding:10px;cursor:pointer}
+ .hamb span{display:block;height:2px;width:24px;background:currentColor;border-radius:2px}
+ .sidebar,.side{position:fixed!important;z-index:80!important;top:0!important;left:0!important;bottom:0!important;width:min(82vw,310px)!important;max-width:310px!important;transform:translateX(-105%);transition:transform .22s ease;overflow-y:auto!important}
+ body.drawer-open .sidebar,body.drawer-open .side{transform:translateX(0)}
+ .drawer-backdrop{position:fixed;z-index:70;inset:0;background:rgba(0,0,0,.45)}
+ body.drawer-open .drawer-backdrop{display:block}
+}
+@media(min-width:900px){
+ .drawer-professions{margin-top:6px}
 }
 </style>
-</head><body>
-<header class="diary-topbar">
-  <button id="diaryMenuBtn" class="diary-hamb" aria-label="Trocar diário" aria-expanded="false">
-    <span></span><span></span><span></span>
-  </button>
-  <strong id="diaryMobileTitle">DIÁRIO DO MINERADOR</strong>
-</header>
-<div id="diaryBackdrop" class="diary-backdrop"></div>
-<aside id="diaryDrawer" class="diary-drawer">
-  <div class="diary-drawer-head"><strong>DIÁRIOS</strong></div>
-  <button class="prof-btn active" data-prof="ore">Minerador</button>
-  <button class="prof-btn" data-prof="wood">Lenhador</button>
-  <button class="prof-btn" data-prof="hide">Curtidor</button>
-  <button class="prof-btn" data-prof="fiber">Tecelão</button>
-  <button class="prof-btn" data-prof="rock">Pedreiro</button>
-</aside><div class="app"><aside class="side"><div class="brand" id="brandTitle">DIÁRIO DO MINERADOR</div><nav class="nav"><button class="on" data-p="painel">Painel</button><button data-p="estoque">Estoque</button><button data-p="aportes">Aportes e saídas</button><button data-p="config">Configurações</button></nav></aside><main class="main">
+
+<style>
+/* Hybrid V14:
+   Desktop >=900px: V11 navigation/sidebar.
+   Mobile <900px: V13-style diary-only drawer + compact page tabs. */
+.mobile-page-tabs{display:none}
+
+@media(max-width:899px){
+  /* Hide regular page-navigation entries inside the drawer.
+     Drawer becomes diary-switcher only, like V13. */
+  .nav button[data-p]{display:none!important}
+  .desktop-menu-marker{display:none!important}
+
+  /* V13-like compact tabs for app sections. */
+  .mobile-page-tabs{
+    display:flex;
+    gap:6px;
+    align-items:center;
+    overflow-x:auto;
+    white-space:nowrap;
+    padding:8px 10px;
+    border-bottom:1px solid var(--line);
+    background:var(--bg);
+    position:sticky;
+    top:62px;
+    z-index:45;
+    scrollbar-width:none;
+  }
+  .mobile-page-tabs::-webkit-scrollbar{display:none}
+  .mobile-page-tabs button{
+    flex:0 0 auto;
+    border:0;
+    background:transparent;
+    color:inherit;
+    padding:9px 12px;
+    border-radius:10px;
+    cursor:pointer;
+    font:inherit;
+  }
+  .mobile-page-tabs button.active{
+    background:var(--panel);
+    font-weight:800;
+  }
+}
+
+@media(min-width:900px){
+  /* Desktop remains V11. No duplicated mobile tabs. */
+  .mobile-page-tabs{display:none!important}
+  .nav button[data-p]{display:block}
+}
+</style>
+</head><body><header class="app-topbar"><button id="menuBtn" class="hamb" aria-label="Abrir menu" aria-expanded="false"><span></span><span></span><span></span></button><strong id="mobileTitle">DIÁRIO DO MINERADOR</strong></header><div id="drawerBackdrop" class="drawer-backdrop"></div><div class="app"><aside class="side"><div class="brand" id="brandTitle">DIÁRIO DO MINERADOR</div><nav class="nav"><div class="drawer-professions"><div class="drawer-label">DIÁRIOS</div>
+<button class="prof-btn active" data-prof="ore">Minerador</button>
+<button class="prof-btn" data-prof="wood">Lenhador</button>
+<button class="prof-btn" data-prof="hide">Curtidor</button>
+<button class="prof-btn" data-prof="fiber">Tecelão</button>
+<button class="prof-btn" data-prof="rock">Pedreiro</button>
+<div class="drawer-sep desktop-menu-marker"></div><div class="drawer-label desktop-menu-marker">MENU</div><button class="on" data-p="painel">Painel</button><button data-p="estoque">Estoque</button><button data-p="aportes">Aportes e saídas</button><button data-p="config">Configurações</button></div></nav></aside><div class="mobile-page-tabs"><button class="on" data-p="painel">Painel</button><button data-p="estoque">Estoque</button><button data-p="aportes">Aportes e saídas</button><button data-p="config">Configurações</button></div><main class="main">
 <section id="painel" class="page on"><h1>Painel de refino</h1><div class="lead">Escolha a barra. Estoque, retorno e mercado entram automaticamente na conta.</div><div class="grid">
 <div class="card"><h2>Produção</h2><div class="item"><img id="hero"><div class="grow"><label>Barra</label><select id="target"></select><div id="recipe" class="mut tiny"></div></div></div><div id="simBox" style="display:none;margin-top:12px"><label>Simular produção</label><input id="simQty" type="number" min="1" placeholder="Digite quantas barras quer simular"><div class="mut tiny">Simulação temporária. Não altera sua quantidade padrão.</div></div><div class="actions"><button id="refresh" class="btn primary">Atualizar mercado</button><button id="calc" class="btn">Recalcular</button></div><div id="status" class="status">Mercado ainda não atualizado nesta sessão.</div></div>
 <div class="card"><h2>Estoque usado nesta receita</h2><div id="owned"></div></div>
@@ -179,14 +205,14 @@ function commitRefine(){
  ss();logs.unshift({id:'m'+Date.now(),date:new Date().toISOString(),type:'refino',items:movements,total:x.q,cancelled:false});
  localStorage.setItem(L,JSON.stringify(logs));$('simQty').value='';stockUI();owned();logUI();calc();
 }
-document.querySelectorAll('.nav button').forEach(b=>b.onclick=()=>{document.querySelectorAll('.nav button').forEach(x=>x.classList.remove('on'));b.classList.add('on');document.querySelectorAll('.page').forEach(x=>x.classList.remove('on'));$(b.dataset.p).classList.add('on');if(b.dataset.p==='estoque')stockUI();if(b.dataset.p==='aportes')logUI()});document.querySelectorAll('.chip[data-f]').forEach(b=>b.onclick=()=>{document.querySelectorAll('.chip[data-f]').forEach(x=>x.classList.remove('on'));b.classList.add('on');stockUI(b.dataset.f)});
+document.querySelectorAll('button[data-p]').forEach(b=>b.onclick=()=>{document.querySelectorAll('button[data-p]').forEach(x=>x.classList.remove('on'));b.classList.add('on');document.querySelectorAll('.page').forEach(x=>x.classList.remove('on'));$(b.dataset.p).classList.add('on');if(b.dataset.p==='estoque')stockUI();if(b.dataset.p==='aportes')logUI()});document.querySelectorAll('.chip[data-f]').forEach(b=>b.onclick=()=>{document.querySelectorAll('.chip[data-f]').forEach(x=>x.classList.remove('on'));b.classList.add('on');stockUI(b.dataset.f)});
 $('target').onchange=()=>{$('simQty').value='';hero()};$('simQty').oninput=calc;$('refresh').onclick=refresh;$('calc').onclick=calc;$('savecfg').onclick=savecfg;$('resetcfg').onclick=()=>{cfg={server:'west',city:'Fort Sterling',rrr:15.2,tax:0,productionMode:'buy',buyMode:'sell',saleMode:'buy',defqty:0};localStorage.setItem(C,JSON.stringify(cfg));loadcfg();calc()};$('zero').onclick=()=>{if(confirm('Zerar todo o estoque?')){stock={};ss();stockUI();owned();calc()}};
 function openMovement(type){movementType=type;$('modalTitle').textContent=type==='aporte'?'Novo aporte':'Nova saída';$('modalLead').textContent=type==='aporte'?'Informe o que entrou no estoque.':'Informe o que saiu do estoque.';$('modal').classList.add('on');apUI()}
 $('newap').onclick=()=>openMovement('aporte');$('newout').onclick=()=>openMovement('saida');$('cancelap').onclick=()=>$('modal').classList.remove('on');
 $('saveap').onclick=()=>{let grouped={},total=0;document.querySelectorAll('.move-row').forEach(r=>{let id=r.querySelector('.move-item').value,v=Math.max(0,+r.querySelector('.move-qty').value||0);if(id&&v){grouped[id]=(grouped[id]||0)+v;total+=v}});let moves=Object.entries(grouped).map(([id,v])=>({id,qty:movementType==='aporte'?v:-v}));if(!total)return alert('Informe pelo menos um item e uma quantidade.');if(movementType==='saida'){for(const it of moves)if(gs(it.id)<-it.qty)return alert(`Estoque insuficiente de ${itemNameById(it.id)}.`)}moves.forEach(it=>stock[it.id]=Math.max(0,gs(it.id)+it.qty));ss();logs.unshift({id:'m'+Date.now(),date:new Date().toISOString(),type:movementType,items:moves,total,cancelled:false});localStorage.setItem(L,JSON.stringify(logs));$('modal').classList.remove('on');stockUI();logUI();owned();calc()};
 function setProfession(v){
  profession=v;localStorage.setItem('flv2_profession',v);items=[...vars('ore'),...vars('bar')];
- $('brandTitle').textContent=P().title;$('diaryMobileTitle').textContent=P().title;document.querySelectorAll('.prof-btn').forEach(b=>b.classList.toggle('active',b.dataset.prof===v));
+ $('brandTitle').textContent=P().title;$('mobileTitle').textContent=P().title;document.querySelectorAll('.prof-btn').forEach(b=>b.classList.toggle('active',b.dataset.prof===v));
  let sel=$('target'),old=sel.value;sel.innerHTML='';
  for(let t=2;t<=8;t++){let es=t>=4?[0,1,2,3,4]:[0];for(let e of es){let op=document.createElement('option');op.value=`${t}.${e}`;op.textContent=`${P().refName} T${t}${e?'.'+e:''}`;sel.appendChild(op)}}
  if([...sel.options].some(o=>o.value===old))sel.value=old;
@@ -194,19 +220,11 @@ function setProfession(v){
 }
 
 
-function closeDiaryDrawer(){
- document.body.classList.remove('diary-open');
- $('diaryMenuBtn').setAttribute('aria-expanded','false');
-}
-$('diaryMenuBtn').onclick=()=>{
- let on=document.body.classList.toggle('diary-open');
- $('diaryMenuBtn').setAttribute('aria-expanded',on?'true':'false');
-};
-$('diaryBackdrop').onclick=closeDiaryDrawer;
-document.querySelectorAll('.prof-btn').forEach(b=>b.onclick=()=>{
- setProfession(b.dataset.prof);
- closeDiaryDrawer();
-});
+function closeDrawer(){document.body.classList.remove('drawer-open');$('menuBtn').setAttribute('aria-expanded','false')}
+$('menuBtn').onclick=()=>{let on=document.body.classList.toggle('drawer-open');$('menuBtn').setAttribute('aria-expanded',on?'true':'false')};
+$('drawerBackdrop').onclick=closeDrawer;
+document.querySelectorAll('.prof-btn').forEach(b=>b.onclick=()=>{setProfession(b.dataset.prof);closeDrawer()});
+document.querySelectorAll('button[data-p]').forEach(b=>b.addEventListener('click',()=>{if(innerWidth<900)closeDrawer()}));
 
 setProfession(profession);
 loadcfg();stockUI();logUI();hero();
