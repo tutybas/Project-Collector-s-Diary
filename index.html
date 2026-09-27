@@ -83,6 +83,42 @@
   .nav button[data-p]{display:block}
 }
 </style>
+
+<style>
+/* V15 — desktop uses substantially more horizontal space while preserving card proportions. */
+@media(min-width:900px){
+  main,.main,.content{
+    max-width:min(1600px, calc(100vw - 300px))!important;
+    width:calc(100vw - 300px)!important;
+    margin-left:auto!important;
+    margin-right:auto!important;
+    box-sizing:border-box;
+  }
+  .page{
+    max-width:1500px!important;
+    width:100%!important;
+    box-sizing:border-box;
+  }
+  .grid,.stats,.stock-grid,.cards{
+    width:100%;
+  }
+}
+
+/* Mobile hamburger always contrasts with the current page/theme.
+   mix-blend-mode:difference makes white become dark over light backgrounds
+   and remain bright over dark backgrounds. */
+@media(max-width:899px){
+  .hamb,.diary-hamb,#menuBtn,#diaryMenuBtn{
+    background:#fff!important;
+    color:#fff!important;
+    border-color:#fff!important;
+    mix-blend-mode:difference;
+  }
+  .hamb span,.diary-hamb span,#menuBtn span,#diaryMenuBtn span{
+    background:#fff!important;
+  }
+}
+</style>
 </head><body><header class="app-topbar"><button id="menuBtn" class="hamb" aria-label="Abrir menu" aria-expanded="false"><span></span><span></span><span></span></button><strong id="mobileTitle">DIÁRIO DO MINERADOR</strong></header><div id="drawerBackdrop" class="drawer-backdrop"></div><div class="app"><aside class="side"><div class="brand" id="brandTitle">DIÁRIO DO MINERADOR</div><nav class="nav"><div class="drawer-professions"><div class="drawer-label">DIÁRIOS</div>
 <button class="prof-btn active" data-prof="ore">Minerador</button>
 <button class="prof-btn" data-prof="wood">Lenhador</button>
