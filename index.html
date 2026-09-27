@@ -119,6 +119,39 @@
   }
 }
 </style>
+
+<style>
+/* V16 — hamburger: only the three strokes invert against the theme. */
+@media(max-width:899px){
+  .hamb,.diary-hamb,#menuBtn,#diaryMenuBtn{
+    background:transparent!important;
+    color:inherit!important;
+    border-color:transparent!important;
+    mix-blend-mode:normal!important;
+    box-shadow:none!important;
+  }
+  .hamb span,.diary-hamb span,#menuBtn span,#diaryMenuBtn span{
+    background:#fff!important;
+    mix-blend-mode:difference!important;
+  }
+}
+
+/* Desktop: keep the approved side breathing room and use a comparable
+   proportion vertically, so the working area fills more of the screen. */
+@media(min-width:900px){
+  main,.main,.content{
+    padding-top:clamp(14px,1.5vw,24px)!important;
+    padding-bottom:clamp(14px,1.5vw,24px)!important;
+  }
+  .page{
+    margin-top:0!important;
+    margin-bottom:0!important;
+    padding-top:clamp(10px,1vw,18px)!important;
+    padding-bottom:clamp(10px,1vw,18px)!important;
+    min-height:calc(100vh - 48px);
+  }
+}
+</style>
 </head><body><header class="app-topbar"><button id="menuBtn" class="hamb" aria-label="Abrir menu" aria-expanded="false"><span></span><span></span><span></span></button><strong id="mobileTitle">DIÁRIO DO MINERADOR</strong></header><div id="drawerBackdrop" class="drawer-backdrop"></div><div class="app"><aside class="side"><div class="brand" id="brandTitle">DIÁRIO DO MINERADOR</div><nav class="nav"><div class="drawer-professions"><div class="drawer-label">DIÁRIOS</div>
 <button class="prof-btn active" data-prof="ore">Minerador</button>
 <button class="prof-btn" data-prof="wood">Lenhador</button>
