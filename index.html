@@ -8,7 +8,37 @@
 .move-row select,.move-row input{width:100%;box-sizing:border-box}
 @media(max-width:560px){.move-row{grid-template-columns:1fr!important}}
 </style>
-<style>.profession-switch{padding:0 10px 16px}.profession-switch label{display:block;font-size:10px;letter-spacing:.12em;color:var(--mut);margin-bottom:6px}.profession-switch select{width:100%}</style></head><body><div class="app"><aside class="side"><div class="brand" id="brandTitle">DIÁRIO DO MINERADOR</div><div class="profession-switch"><label>OFÍCIO</label><select id="profession"><option value="ore">Minerador</option><option value="wood">Lenhador</option><option value="hide">Curtidor</option><option value="fiber">Tecelão</option><option value="rock">Pedreiro</option></select></div><nav class="nav"><button class="on" data-p="painel">Painel</button><button data-p="estoque">Estoque</button><button data-p="aportes">Aportes e saídas</button><button data-p="config">Configurações</button></nav></aside><main class="main">
+<style>.profession-switch{padding:0 10px 16px}.profession-switch label{display:block;font-size:10px;letter-spacing:.12em;color:var(--mut);margin-bottom:6px}.profession-switch select{width:100%}</style>
+<style>
+.app-topbar{display:none}
+.drawer-professions{display:flex;flex-direction:column;gap:4px;padding:6px 8px 10px}
+.drawer-label{font-size:10px;letter-spacing:.14em;color:var(--mut);padding:8px 10px 4px}
+.drawer-sep{height:1px;background:var(--line);margin:8px 6px}
+.prof-btn{border:0;background:transparent;color:inherit;text-align:left;padding:10px 12px;border-radius:10px;cursor:pointer;font:inherit}
+.prof-btn.active{background:var(--panel);font-weight:800}
+.drawer-backdrop{display:none}
+@media(max-width:899px){
+ body{padding-top:62px}
+ .app-topbar{display:flex;position:fixed;z-index:60;top:0;left:0;right:0;height:62px;align-items:center;gap:14px;padding:0 16px;background:var(--bg);border-bottom:1px solid var(--line)}
+ .app-topbar strong{font-size:14px;letter-spacing:.04em}
+ .hamb{width:44px;height:44px;border:0;background:transparent;border-radius:10px;display:flex;flex-direction:column;justify-content:center;gap:5px;padding:10px;cursor:pointer}
+ .hamb span{display:block;height:2px;width:24px;background:currentColor;border-radius:2px}
+ .sidebar,.side{position:fixed!important;z-index:80!important;top:0!important;left:0!important;bottom:0!important;width:min(82vw,310px)!important;max-width:310px!important;transform:translateX(-105%);transition:transform .22s ease;overflow-y:auto!important}
+ body.drawer-open .sidebar,body.drawer-open .side{transform:translateX(0)}
+ .drawer-backdrop{position:fixed;z-index:70;inset:0;background:rgba(0,0,0,.45)}
+ body.drawer-open .drawer-backdrop{display:block}
+}
+@media(min-width:900px){
+ .drawer-professions{margin-top:6px}
+}
+</style>
+</head><body><header class="app-topbar"><button id="menuBtn" class="hamb" aria-label="Abrir menu" aria-expanded="false"><span></span><span></span><span></span></button><strong id="mobileTitle">DIÁRIO DO MINERADOR</strong></header><div id="drawerBackdrop" class="drawer-backdrop"></div><div class="app"><aside class="side"><div class="brand" id="brandTitle">DIÁRIO DO MINERADOR</div><nav class="nav"><div class="drawer-professions"><div class="drawer-label">DIÁRIOS</div>
+<button class="prof-btn active" data-prof="ore">Minerador</button>
+<button class="prof-btn" data-prof="wood">Lenhador</button>
+<button class="prof-btn" data-prof="hide">Curtidor</button>
+<button class="prof-btn" data-prof="fiber">Tecelão</button>
+<button class="prof-btn" data-prof="rock">Pedreiro</button>
+<div class="drawer-sep"></div><div class="drawer-label">MENU</div><button class="on" data-p="painel">Painel</button><button data-p="estoque">Estoque</button><button data-p="aportes">Aportes e saídas</button><button data-p="config">Configurações</button></div></nav></aside><main class="main">
 <section id="painel" class="page on"><h1>Painel de refino</h1><div class="lead">Escolha a barra. Estoque, retorno e mercado entram automaticamente na conta.</div><div class="grid">
 <div class="card"><h2>Produção</h2><div class="item"><img id="hero"><div class="grow"><label>Barra</label><select id="target"></select><div id="recipe" class="mut tiny"></div></div></div><div id="simBox" style="display:none;margin-top:12px"><label>Simular produção</label><input id="simQty" type="number" min="1" placeholder="Digite quantas barras quer simular"><div class="mut tiny">Simulação temporária. Não altera sua quantidade padrão.</div></div><div class="actions"><button id="refresh" class="btn primary">Atualizar mercado</button><button id="calc" class="btn">Recalcular</button></div><div id="status" class="status">Mercado ainda não atualizado nesta sessão.</div></div>
 <div class="card"><h2>Estoque usado nesta receita</h2><div id="owned"></div></div>
@@ -131,13 +161,20 @@ $('newap').onclick=()=>openMovement('aporte');$('newout').onclick=()=>openMoveme
 $('saveap').onclick=()=>{let grouped={},total=0;document.querySelectorAll('.move-row').forEach(r=>{let id=r.querySelector('.move-item').value,v=Math.max(0,+r.querySelector('.move-qty').value||0);if(id&&v){grouped[id]=(grouped[id]||0)+v;total+=v}});let moves=Object.entries(grouped).map(([id,v])=>({id,qty:movementType==='aporte'?v:-v}));if(!total)return alert('Informe pelo menos um item e uma quantidade.');if(movementType==='saida'){for(const it of moves)if(gs(it.id)<-it.qty)return alert(`Estoque insuficiente de ${itemNameById(it.id)}.`)}moves.forEach(it=>stock[it.id]=Math.max(0,gs(it.id)+it.qty));ss();logs.unshift({id:'m'+Date.now(),date:new Date().toISOString(),type:movementType,items:moves,total,cancelled:false});localStorage.setItem(L,JSON.stringify(logs));$('modal').classList.remove('on');stockUI();logUI();owned();calc()};
 function setProfession(v){
  profession=v;localStorage.setItem('flv2_profession',v);items=[...vars('ore'),...vars('bar')];
- $('brandTitle').textContent=P().title;$('profession').value=v;
+ $('brandTitle').textContent=P().title;$('mobileTitle').textContent=P().title;document.querySelectorAll('.prof-btn').forEach(b=>b.classList.toggle('active',b.dataset.prof===v));
  let sel=$('target'),old=sel.value;sel.innerHTML='';
  for(let t=2;t<=8;t++){let es=t>=4?[0,1,2,3,4]:[0];for(let e of es){let op=document.createElement('option');op.value=`${t}.${e}`;op.textContent=`${P().refName} T${t}${e?'.'+e:''}`;sel.appendChild(op)}}
  if([...sel.options].some(o=>o.value===old))sel.value=old;
  stockUI();owned();apUI();hero();
 }
-$('profession').onchange=e=>setProfession(e.target.value);
+
+
+function closeDrawer(){document.body.classList.remove('drawer-open');$('menuBtn').setAttribute('aria-expanded','false')}
+$('menuBtn').onclick=()=>{let on=document.body.classList.toggle('drawer-open');$('menuBtn').setAttribute('aria-expanded',on?'true':'false')};
+$('drawerBackdrop').onclick=closeDrawer;
+document.querySelectorAll('.prof-btn').forEach(b=>b.onclick=()=>{setProfession(b.dataset.prof);closeDrawer()});
+document.querySelectorAll('.nav button[data-p]').forEach(b=>b.addEventListener('click',()=>{if(innerWidth<900)closeDrawer()}));
+
 setProfession(profession);
 loadcfg();stockUI();logUI();hero();
 ;$('doRefine').onclick=commitRefine</script></body></html>
