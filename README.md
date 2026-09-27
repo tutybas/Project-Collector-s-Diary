@@ -2,9 +2,11 @@
 
 Aplicação web em arquivo único para acompanhar **coleta, estoque e refino no Albion Online**.
 
-O Collector's Diary foi pensado para responder uma pergunta prática: **com o que eu tenho no estoque e com os preços atuais do mercado, o que faz sentido refinar?**
+O Collector's Diary foi feito para **jogadores iniciantes e experientes** que querem gastar menos tempo conferindo preços, fazendo contas manualmente e tentando descobrir se compensa mais refinar, vender os materiais ou comprar o que está faltando.
 
-A aplicação reúne cálculo de refino, consulta de mercado, controle de estoque e histórico de movimentações em uma interface que funciona tanto no computador quanto no celular.
+A ideia é simples: você informa e acompanha seu estoque, escolhe o que pretende produzir e deixa o aplicativo cruzar esses dados com **preços de mercado obtidos pela API do Albion Online Data Project**. Assim, o painel concentra as informações necessárias para ajudar na decisão sem precisar ficar alternando entre mercado, calculadora e anotações.
+
+O Collector's Diary reúne cálculo de refino, consulta de mercado, controle de estoque e histórico de movimentações em uma interface que funciona tanto no computador quanto no celular. Ele não joga nem negocia por você: funciona como uma ferramenta de apoio para tornar o processo de coleta e refino mais rápido e organizado.
 
 ## O que você pode fazer
 
