@@ -4,9 +4,9 @@
 @media(max-width:900px){.app{grid-template-columns:1fr}.side{border-right:0;border-bottom:1px solid var(--line)}.nav{grid-template-columns:repeat(4,1fr)}.nav button{text-align:center}.grid{grid-template-columns:1fr}.full{grid-column:auto}.stockgrid{grid-template-columns:repeat(2,1fr)}}@media(max-width:560px){.main{padding:14px}.fields,.stats,.aportes{grid-template-columns:1fr 1fr}.stockgrid{grid-template-columns:1fr}}
 </style></head><body><div class="app"><aside class="side"><div class="brand">FORJA DA LÂMINA<small>Albion Online • Americas</small></div><nav class="nav"><button class="on" data-p="painel">Painel</button><button data-p="estoque">Estoque</button><button data-p="aportes">Aportes</button><button data-p="config">Configurações</button></nav></aside><main class="main">
 <section id="painel" class="page on"><h1>Painel de refino</h1><div class="lead">Escolha a barra. Estoque, retorno e mercado entram automaticamente na conta.</div><div class="grid">
-<div class="card"><h2>Produção</h2><div class="item"><img id="hero"><div class="grow"><label>Barra</label><select id="target"></select><div id="recipe" class="mut tiny"></div></div></div><div class="actions"><button id="refresh" class="btn primary">Atualizar mercado</button><button id="calc" class="btn">Recalcular</button></div><div id="status" class="status">Mercado ainda não atualizado nesta sessão.</div></div>
+<div class="card"><h2>Produção</h2><div class="item"><img id="hero"><div class="grow"><label>Barra</label><select id="target"></select><div id="recipe" class="mut tiny"></div></div></div><div id="simBox" style="display:none;margin-top:12px"><label>Simular produção</label><input id="simQty" type="number" min="1" placeholder="Digite quantas barras quer simular"><div class="mut tiny">Simulação temporária. Não altera sua quantidade padrão.</div></div><div class="actions"><button id="refresh" class="btn primary">Atualizar mercado</button><button id="calc" class="btn">Recalcular</button></div><div id="status" class="status">Mercado ainda não atualizado nesta sessão.</div></div>
 <div class="card"><h2>Estoque usado nesta receita</h2><div id="owned"></div></div>
-<div class="card full"><h2>Resultado</h2><div class="stats"><div class="stat"><span>BARRAS A PRODUZIR</span><b id="oq">—</b></div><div class="stat"><span>COMPRA NECESSÁRIA</span><b id="cash">—</b></div><div class="stat"><span>RECEITA LÍQUIDA</span><b id="rev">—</b></div><div class="stat"><span>LUCRO ECONÔMICO</span><b id="profit">—</b></div></div><div id="result"></div><div id="purchaseList"></div></div></div></section>
+<div class="card full"><h2>Resultado</h2><div class="stats"><div class="stat"><span>BARRAS A PRODUZIR</span><b id="oq">—</b></div><div class="stat"><span>COMPRA NECESSÁRIA</span><b id="cash">—</b></div><div class="stat"><span>PREÇO DE VENDA / BARRA</span><b id="unitSale">—</b></div><div class="stat"><span>VALOR TOTAL DA VENDA</span><b id="grossSale">—</b></div><div class="stat"><span>RECEITA APÓS TAXA</span><b id="rev">—</b></div><div class="stat"><span>RESULTADO REAL</span><b id="profit">—</b></div></div><div id="result"></div><div id="purchaseList"></div></div></div></section>
 <section id="estoque" class="page"><h1>Estoque</h1><div class="lead">O conteúdo do seu baú fica salvo neste navegador.</div><div class="chips"><button class="chip on" data-f="all">Tudo</button><button class="chip" data-f="ore">Minérios</button><button class="chip" data-f="bar">Barras</button><button id="zero" class="chip">Zerar estoque</button></div><div id="stockgrid" class="stockgrid"></div></section>
 <section id="aportes" class="page"><h1>Aportes</h1><div class="lead">Registre cada volta da mineração e some o lote ao estoque.</div><div class="card"><button id="newap" class="btn primary">Novo aporte</button></div><div class="card" style="margin-top:14px"><h2>Diário de mineração</h2><div style="overflow:auto"><table class="log"><thead><tr><th>DATA</th><th>ITENS</th><th>TOTAL</th></tr></thead><tbody id="logs"></tbody></table></div></div></section>
 <section id="config" class="page"><h1>Configurações</h1><div class="lead">Defina uma vez os valores que raramente mudam.</div><div class="card"><div class="fields"><div><label>Servidor</label><select id="server"><option value="west">Americas</option><option value="europe">Europe</option><option value="east">Asia</option></select></div><div><label>Cidade / mercado</label><select id="city"><option>Fort Sterling</option><option>Thetford</option><option>Martlock</option><option>Lymhurst</option><option>Bridgewatch</option><option>Caerleon</option><option>Brecilien</option></select></div><div><label>Retorno de recursos (%)</label><input id="rrr" type="number" step=".1"></div><div><label>Taxa do mercado (%)</label><input id="tax" type="number" step=".1"></div><div><label>Compra de materiais</label><select id="buyMode"><option value="sell">Comprar imediatamente</option><option value="buy">Ordem de compra</option></select></div><div><label>Venda das barras</label><select id="saleMode"><option value="buy">Venda rápida</option><option value="sell">Ordem de venda</option></select></div><div><label>Quantidade a produzir</label><input id="defqty" type="number" min="0"><div class="mut tiny">0 = usar todo o minério disponível</div></div></div><div class="actions"><button id="savecfg" class="btn primary">Salvar configurações</button><button id="resetcfg" class="btn">Restaurar padrões</button></div><div id="cfgmsg" class="status"></div></div></section>
@@ -31,35 +31,34 @@ async function refresh(){try{$('status').textContent='Consultando mercado...';le
 function calc(){
 if(!$('target').value)return;
 let{t,e}=target(),rr=cfg.rrr/100,o=iid('ore',t,e),p=t>2?iid('bar',t-1,e):null,b=iid('bar',t,e),
-ownO=gs(o),ownP=p?gs(p):0,q=Math.max(0,Number(cfg.defqty)||0),no=R[t]*(1-rr),np=t>2?1-rr:0;
-if(q===0)q=ownO?Math.floor(ownO/no):0;
-$('oq').textContent=q.toLocaleString('pt-BR');
+ownO=gs(o),ownP=p?gs(p):0,configured=Math.max(0,Number(cfg.defqty)||0),no=R[t]*(1-rr),np=t>2?1-rr:0;
+let laborCase=ownO===0&&ownP===0&&configured===0;
+$('simBox').style.display=laborCase?'block':'none';
+let sim=laborCase?Math.max(0,Number($('simQty').value)||0):0;
+let q=configured>0?configured:(laborCase?sim:(ownO?Math.floor(ownO/no):0));
+$('oq').textContent=q?q.toLocaleString('pt-BR'):'—';
 if(!q){
- $('cash').textContent=$('rev').textContent=$('profit').textContent='—';
- $('result').innerHTML='<div class="call">Sem quantidade configurada e sem minério desse tipo no estoque.</div>';
+ $('cash').textContent=$('rev').textContent=$('profit').textContent=$('unitSale').textContent=$('grossSale').textContent='—';
+ $('result').innerHTML=laborCase?'<div class="mut tiny">Digite acima quantas barras quer usar na simulação de mão de obra.</div>':'<div class="mut tiny">Não há minério suficiente no estoque para calcular esta produção.</div>';
  $('purchaseList').innerHTML='';
  return;
 }
 let needO=q*no,needP=q*np,buyO=Math.max(0,needO-ownO),buyP=Math.max(0,needP-ownP),
 op=price(o,cfg.buyMode),pp=p?price(p,cfg.buyMode):0,bp=price(b,cfg.saleMode),
 oreCost=buyO*op,prevCost=buyP*pp,cash=oreCost+prevCost,
-rev=q*bp*(1-cfg.tax/100),
+gross=q*bp,rev=gross*(1-cfg.tax/100),
 opp=Math.min(ownO,needO)*(price(o,'sell')||price(o,'buy'))+
     Math.min(ownP,needP)*(p?(price(p,'sell')||price(p,'buy')):0),
 prof=rev-cash-opp;
-$('cash').textContent=money(cash);$('rev').textContent=money(rev);$('profit').textContent=money(prof);
+$('cash').textContent=money(cash);$('unitSale').textContent=money(bp);$('grossSale').textContent=money(gross);$('rev').textContent=money(rev);$('profit').textContent=money(prof);
 $('profit').className=prof>=0?'ok':'bad';
-let zeroStock=ownO===0&&ownP===0;
-$('result').innerHTML=
-`<div class="call">${zeroStock?'Simulação de mão de obra: comprando todos os materiais, refinando e vendendo. ':''}
-Produzir <strong>${q.toLocaleString('pt-BR')} ${name('bar',t,e)}</strong>. Retorno considerado: <strong>${cfg.rrr}%</strong>.</div>
-<div class="mut tiny">Resultado calculado antes do custo cobrado pela estação de refino. Esse custo não é incluído porque varia conforme a estação escolhida.</div>`;
+$('result').innerHTML=`<div class="mut tiny" style="margin-top:10px">${laborCase?'Simulação: comprando todos os materiais, refinando e vendendo. ':''}Resultado antes do custo cobrado pela estação de refino.</div>`;
 let rows=[];
 if(buyO>0)rows.push(`<div class="item"><img src="${img('ore',t,e)}"><div class="grow"><b>${name('ore',t,e)}</b><div class="mut">Comprar ${Math.ceil(buyO).toLocaleString('pt-BR')} unidades</div></div><div><b>${money(oreCost)}</b></div></div>`);
 if(p&&buyP>0)rows.push(`<div class="item"><img src="${img('bar',t-1,e)}"><div class="grow"><b>${name('bar',t-1,e)}</b><div class="mut">Comprar ${Math.ceil(buyP).toLocaleString('pt-BR')} unidades</div></div><div><b>${money(prevCost)}</b></div></div>`);
-$('purchaseList').innerHTML=`<h2 style="margin-top:18px">Compras necessárias</h2>${rows.length?rows.join(''):'<div class="call">Seu estoque já cobre os materiais necessários.</div>'}<div style="text-align:right;margin-top:8px"><span class="mut">Total das compras: </span><strong>${money(cash)}</strong></div>`;
+$('purchaseList').innerHTML=`<h2 style="margin-top:18px">Compras necessárias</h2>${rows.length?rows.join(''):'<div class="mut tiny">Seu estoque já cobre os materiais necessários.</div>'}<div style="text-align:right;margin-top:8px"><span class="mut">Total das compras: </span><strong>${money(cash)}</strong></div>`;
 }
 document.querySelectorAll('.nav button').forEach(b=>b.onclick=()=>{document.querySelectorAll('.nav button').forEach(x=>x.classList.remove('on'));b.classList.add('on');document.querySelectorAll('.page').forEach(x=>x.classList.remove('on'));$(b.dataset.p).classList.add('on');if(b.dataset.p==='estoque')stockUI();if(b.dataset.p==='aportes')logUI()});document.querySelectorAll('.chip[data-f]').forEach(b=>b.onclick=()=>{document.querySelectorAll('.chip[data-f]').forEach(x=>x.classList.remove('on'));b.classList.add('on');stockUI(b.dataset.f)});
-$('target').onchange=hero;$('refresh').onclick=refresh;$('calc').onclick=calc;$('savecfg').onclick=savecfg;$('resetcfg').onclick=()=>{cfg={server:'west',city:'Fort Sterling',rrr:15.2,tax:0,buyMode:'sell',saleMode:'buy',defqty:0};localStorage.setItem(C,JSON.stringify(cfg));loadcfg();calc()};$('zero').onclick=()=>{if(confirm('Zerar todo o estoque?')){stock={};ss();stockUI();owned();calc()}};$('newap').onclick=()=>{$('modal').classList.add('on');apUI()};$('cancelap').onclick=()=>$('modal').classList.remove('on');$('saveap').onclick=()=>{let parts=[],total=0;document.querySelectorAll('.api').forEach(x=>{let v=Math.max(0,+x.value||0);if(v){stock[x.dataset.id]=gs(x.dataset.id)+v;parts.push(`${x.dataset.n}: ${v}`);total+=v}});if(!total)return alert('Informe pelo menos um minério.');ss();logs.unshift({date:new Date().toLocaleString('pt-BR'),sum:parts.join(' • '),total});localStorage.setItem(L,JSON.stringify(logs));$('modal').classList.remove('on');logUI();owned();calc()};
+$('target').onchange=()=>{$('simQty').value='';hero()};$('simQty').oninput=calc;$('refresh').onclick=refresh;$('calc').onclick=calc;$('savecfg').onclick=savecfg;$('resetcfg').onclick=()=>{cfg={server:'west',city:'Fort Sterling',rrr:15.2,tax:0,buyMode:'sell',saleMode:'buy',defqty:0};localStorage.setItem(C,JSON.stringify(cfg));loadcfg();calc()};$('zero').onclick=()=>{if(confirm('Zerar todo o estoque?')){stock={};ss();stockUI();owned();calc()}};$('newap').onclick=()=>{$('modal').classList.add('on');apUI()};$('cancelap').onclick=()=>$('modal').classList.remove('on');$('saveap').onclick=()=>{let parts=[],total=0;document.querySelectorAll('.api').forEach(x=>{let v=Math.max(0,+x.value||0);if(v){stock[x.dataset.id]=gs(x.dataset.id)+v;parts.push(`${x.dataset.n}: ${v}`);total+=v}});if(!total)return alert('Informe pelo menos um minério.');ss();logs.unshift({date:new Date().toLocaleString('pt-BR'),sum:parts.join(' • '),total});localStorage.setItem(L,JSON.stringify(logs));$('modal').classList.remove('on');logUI();owned();calc()};
 loadcfg();stockUI();logUI();hero();
 </script></body></html>
