@@ -183,14 +183,6 @@ A tabela `PROFESSIONS` reúne os nomes e identificadores de recursos e refinados
 - Validação de configurações antes de consultar o mercado e calcular.
 - Registro e reversão de movimentações com validação do estoque.
 
-## Versão
-
-### v1.0.0
-
-Primeira versão pública funcional do Project Collector's Diary.
-
-Inclui os cinco diários, consulta de mercado, cálculo de refino, dois modos de produção, estoque persistente, aportes e saídas, histórico reversível e interface responsiva.
-
 ## Créditos e dados
 
 Este é um projeto independente para auxiliar jogadores de Albion Online.
